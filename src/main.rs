@@ -226,11 +226,12 @@ fn stats_html(state: &AppState) -> String {
     let inbox = state.inbox.read().map(|g| g.clone()).unwrap_or_default();
     let twilio = inbox.iter().filter(|m| m.provider == "twilio").count();
     let custom = inbox.len() - twilio;
+    let total = inbox.len();
+    let plural = if total == 1 { "message" } else { "messages" };
     format!(
-        "<strong>{}</strong> messages · <span class=\"badge twilio\">twilio {}</span> <span class=\"badge custom\">custom {}</span>",
-        inbox.len(),
-        twilio,
-        custom
+        "<strong>{total}</strong> {plural} · <span class=\"badge twilio\">twilio {twilio}</span> <span class=\"badge custom\">custom {custom}</span>",
+        twilio = twilio,
+        custom = custom,
     )
 }
 
@@ -288,9 +289,9 @@ td.empty { text-align: center; color: #666; padding: 2rem; }
 details summary { cursor: pointer; color: #666; font-size: .8rem; }
 .full { white-space: pre-wrap; margin-top: .4rem; }
 .meta { color: #666; font-size: .75rem; margin-top: .4rem; }
-.badge { font-size: .75rem; padding: .1rem .4rem; border-radius: 4px; background: #eee; white-space: nowrap; }
-.badge.twilio { background: #dff0e0; }
-.badge.custom { background: #dde8f5; }
+.badge { font-size: .75rem; padding: .1rem .4rem; border-radius: 4px; background: light-dark(#eee, #333); color: light-dark(#333, #eee); white-space: nowrap; }
+.badge.twilio { background: light-dark(#dff0e0, #1d4d22); color: light-dark(#14501c, #c8f0cc); }
+.badge.custom { background: light-dark(#dde8f5, #1e3a5f); color: light-dark(#16406e, #c4dcf5); }
 .toolbar { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; color: #666; font-size: .8rem; }
 button.danger { font: inherit; padding: .4rem .8rem; border-radius: 6px; border: 1px solid #c00; background: none; color: #c00; cursor: pointer; }
 </style>
