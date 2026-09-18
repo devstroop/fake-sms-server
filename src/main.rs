@@ -175,10 +175,13 @@ fn filtered(state: &AppState, q: &RowsQuery) -> Vec<Message> {
     let mut items = state.inbox.read().map(|g| g.clone()).unwrap_or_default();
     items.sort_by_key(|m| std::cmp::Reverse(m.received_at));
     let needle = q.q.as_deref().map(str::to_lowercase).unwrap_or_default();
+    // Empty query params (the filter form always submits both fields)
+    // mean "no filter", not "match empty".
+    let provider = q.provider.as_deref().filter(|p| !p.is_empty());
     items
         .into_iter()
         .filter(|m| {
-            q.provider.as_deref().is_none_or(|p| m.provider == p)
+            provider.is_none_or(|p| m.provider == p)
                 && (needle.is_empty()
                     || m.to.to_lowercase().contains(&needle)
                     || m.from.to_lowercase().contains(&needle)
@@ -480,6 +483,10 @@ mod tests {
         rows.assert_status_ok();
         let html = rows.text();
         assert!(html.contains("111") && html.contains("twilio hello"));
+
+        // The filter form always submits both fields; empty means all.
+        let all = s.get("/rows?q=&provider=").await;
+        all.assert_text_contains("twilio hello");
 
         // Provider filter isolates.
         let tw = s.get("/rows?provider=twilio").await;
